@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f5ef">
+  <meta name="description" content="The Waade collection: useful tools, interactive learning, and experiments in AI. Explore websites and projects by Amith Athreya.">
+  <meta property="og:title" content="Waade — Projects">
+  <meta property="og:description" content="Things I’ve made. Places to explore. A collection of tools, interactive learning, and AI experiments.">
+  <meta property="og:type" content="website">
+  <title>Waade — Projects</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" type="module"></script>
+</head>
+<body>
+  <a class="skip-link" href="#projects">Skip to projects</a>
+  <div class="shell">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Waade home"><span class="brand-mark" aria-hidden="true">w.</span><span>waade<span class="wordmark-dot">↗</span></span></a>
+      <nav aria-label="Main navigation"><a class="nav-current" href="#projects">The collection</a><a href="#about">About</a><a class="github-link" href="https://github.com/waade-dev" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></nav>
+    </header>
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy"><p class="eyebrow"><span class="small-star" aria-hidden="true">✳</span> INDEPENDENT PROJECTS & EXPERIMENTS</p><h1 id="hero-title">Things I’ve made.<br>Places to <em>explore.</em></h1><p class="hero-description">Useful tools, curious experiments, and ideas made interactive.<br class="desktop-break"> A small collection of my corners of the internet.</p><a class="browse-link" href="#projects">Find something interesting <span aria-hidden="true">↓</span></a></div>
+        <div class="hero-object" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit-core"><span>W</span><span class="core-dot"></span></div><span class="orbit-tag tag-one">MAKE SOMETHING.</span><span class="orbit-tag tag-two">STAY CURIOUS.</span><span class="orbit-spark">✳</span><span class="orbit-dot"></span></div>
+        <div class="hero-bottom"><span><span class="status-dot" aria-hidden="true"></span> OPEN TO EXPLORATION</span><span>BUILT BY AMITH ATHREYA <span aria-hidden="true">↙</span></span></div>
+      </section>
+      <section class="directory" id="projects" aria-labelledby="directory-title">
+        <div class="section-heading"><div><p class="eyebrow">THE DIRECTORY <span class="section-index">/ 01—06</span></p><h2 id="directory-title">Take a look around.</h2></div><p class="collection-note">A few ideas out in the world.<br>Pick one. Follow your curiosity.</p></div>
+        <div class="toolbar"><div class="filters" role="group" aria-label="Filter projects by category"><button class="filter active" data-category="All" aria-pressed="true">All projects <span>6</span></button><button class="filter" data-category="AI" aria-pressed="false">AI</button><button class="filter" data-category="Learning" aria-pressed="false">Learning</button><button class="filter" data-category="Tools" aria-pressed="false">Tools</button><button class="filter" data-category="Personal" aria-pressed="false">Personal</button></div><div class="search-box"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><label class="sr-only" for="search">Search projects</label><input type="search" id="search" placeholder="Find a project…" autocomplete="off" aria-controls="project-grid"><button id="clear-search" aria-label="Clear search" hidden>×</button><kbd aria-hidden="true">/</kbd></div></div>
+        <p id="results-status" class="results-status" aria-live="polite" aria-atomic="true">Showing all 6 projects</p>
+        <div class="project-grid" id="project-grid" aria-busy="true"></div>
+        <div id="empty-state" class="empty-state" hidden><span aria-hidden="true">⌕</span><h3>Nothing here just yet.</h3><p>Try a different search or explore all the projects.</p><button id="reset-filters">Show all projects <span aria-hidden="true">↗</span></button></div>
+        <div id="load-error" class="load-error" hidden><p>The collection couldn’t load. Please refresh to try again.</p><button id="reload-projects">Try again</button></div>
+        <noscript><p>JavaScript is off. You can still explore the collection:</p><ul><li><a href="https://reasearch-paper-impl.rechargecompare.in/">Interactive Paper Library</a></li><li><a href="https://www.rechargecompare.in/">Ferroprint</a></li><li><a href="https://inside-space.rechargecompare.in/">Inside SPACE</a></li><li><a href="https://second-brain-obsedian-notion-library.rechargecompare.in/">Second Brain</a></li><li><a href="https://cyber-harness-atlas.vercel.app/">Cyber Harness Atlas</a></li><li><a href="https://athreyaamith.rechargecompare.in/">Amith Athreya</a></li></ul></noscript>
+      </section>
+      <section class="about" id="about" aria-labelledby="about-title"><div class="about-symbol" aria-hidden="true">✳</div><div class="about-copy"><p class="eyebrow">ALWAYS A WORK IN PROGRESS</p><h2 id="about-title">A collection of <em>curiosity.</em></h2><p>I’m Amith. I build software and make things to understand them better.<br class="desktop-break"> This is where those ideas find a home on the web.</p></div><a href="https://athreyaamith.rechargecompare.in/" target="_blank" rel="noopener noreferrer">More about me <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></section>
+    </main>
+    <footer><a class="footer-brand" href="/">waade<span aria-hidden="true">.</span></a><p>Built with curiosity. Hosted on Vercel.</p><a href="#top" id="back-to-top">BACK TO TOP <span aria-hidden="true">↑</span></a></footer>
+  </div>
+</body>
+</html>
