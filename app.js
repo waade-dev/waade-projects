@@ -6,6 +6,7 @@ let projects = [];
 let category = 'All';
 
 const art = {
+  skills: '<g fill="none" stroke="currentColor" stroke-width="1.4"><rect x="63" y="40" width="137" height="111" rx="5"/><path d="M63 62h137"/><circle cx="76" cy="51" r="2"/><circle cx="85" cy="51" r="2"/><path d="m79 80 7 6-7 6m17 0h25m-42 19h77m-77 11h54"/><rect x="171" y="78" width="93" height="68" rx="5" fill="var(--art-paper)"/><path d="m193 101-8 9 8 9m48-18 8 9-8 9m-20-20-8 22"/></g><text x="211" y="51" fill="currentColor" font-size="10" font-family="monospace">SKILL.md</text>',
   papers: '<g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M99 33h103v122H99z" transform="rotate(-10 150 95)"/><path d="M106 29h103v122H106z" transform="rotate(6 150 95)"/><path d="M110 27h102v125H110z" fill="var(--art-paper)"/><path d="M125 46h31m-31 9h55m-55 63h71m-71 8h48"/><rect x="126" y="71" width="19" height="24" rx="3"/><rect x="177" y="71" width="19" height="24" rx="3"/><path d="M145 83h32m-9-5 9 5-9 5"/><circle cx="161" cy="105" r="3"/></g><text x="46" y="147" fill="currentColor" font-size="12" font-family="monospace">[ attention ]</text>',
   blueprint: '<g fill="none" stroke="currentColor" stroke-width="1.5"><rect x="55" y="43" width="77" height="47" rx="3"/><rect x="194" y="43" width="77" height="47" rx="3"/><rect x="125" y="122" width="77" height="35" rx="3"/><path d="M132 66h62m-8-5 8 5-8 5m47 19v15H164v17m-5-8 5 8 5-8"/><path d="M72 59h44m-44 11h24m116-11h42m-42 11h22M141 139h45"/><circle cx="55" cy="43" r="3" fill="var(--art-paper)"/><circle cx="132" cy="90" r="3" fill="var(--art-paper)"/></g><path d="m277 122 9 23-10-4-5 9z" fill="currentColor"/>',
   space: '<g fill="none" stroke="currentColor" stroke-width="1.4"><rect x="64" y="27" width="200" height="128" rx="7"/><path d="M64 50h200"/><circle cx="77" cy="39" r="2"/><circle cx="87" cy="39" r="2"/><circle cx="97" cy="39" r="2"/><path d="M135 83 163 67l28 16v32l-28 16-28-16z"/><path d="m135 83 28 16 28-16m-28 16v32"/><path d="m85 76 6 6-6 6m14 1h16"/><path d="M216 111h27m-27 8h17"/></g><text x="82" y="143" fill="currentColor" font-size="9" font-family="monospace">SANDBOX_01</text>',
@@ -29,6 +30,7 @@ function card(project) {
   article.querySelector('.card-domain').textContent = url.hostname.replace(/^www\./, '');
   article.querySelector('.project-name').textContent = project.name;
   article.querySelector('.project-description').textContent = project.description;
+  if (project.access) article.querySelector('.card-visit').firstChild.textContent = `${project.access} `;
   return article;
 }
 
@@ -62,6 +64,8 @@ try {
   if (!response.ok) throw new Error('Catalog unavailable');
   projects = await response.json();
   if (!Array.isArray(projects) || projects.some(p => !p.name || !p.description || !p.category || new URL(p.url).protocol !== 'https:')) throw new Error('Invalid catalog');
+  document.querySelector('[data-category="All"] span').textContent = projects.length;
+  document.querySelector('.section-index').textContent = `/ 01—${String(projects.length).padStart(2, '0')}`;
   render();
 } catch {
   status.textContent = 'Collection unavailable';
