@@ -1,9 +1,72 @@
 [
-  {"id":"papers","name":"Interactive Paper Library","category":"Learning","description":"Landmark AI papers, rebuilt to be explored. Animated architectures, interactive articles, and a path from the basics to the frontier.","url":"https://reasearch-paper-impl.rechargecompare.in/","label":"Research, made interactive","art":"papers","number":"01"},
-  {"id":"ferroprint","name":"Ferroprint","category":"Tools","description":"A blueprint-style sketchpad for system diagrams, flows, wireframes, and floor plans. A little room to think things through.","url":"https://www.rechargecompare.in/","label":"From a thought to a blueprint","art":"blueprint","number":"02"},
-  {"id":"inside-space","name":"Inside SPACE","category":"AI","description":"A hands-on field guide to agent sandboxes. Follow a command through the system and explore what happens inside.","url":"https://inside-space.rechargecompare.in/","label":"Big ideas. Their own space.","art":"space","number":"03"},
-  {"id":"second-brain","name":"Second Brain","category":"Tools","description":"A home for good finds, reading, and things to do. A personal library and Kanban board, connected to Notion.","url":"https://second-brain-obsedian-notion-library.rechargecompare.in/","label":"A home for your curiosity","art":"library","number":"04"},
-  {"id":"harness-atlas","name":"Cyber Harness Atlas","category":"AI","description":"An evidence-led research desk for choosing a cybersecurity agent stack. Explore workflows, models, harnesses, and the sources behind them.","url":"https://cyber-harness-atlas.vercel.app/","label":"Find your way through the stack","art":"atlas","number":"05"},
-  {"id":"amith","name":"Amith Athreya","category":"Personal","description":"The person behind the projects. Software engineering, selected work, and experiments in backend systems and AI.","url":"https://athreyaamith.rechargecompare.in/","label":"A little more about me","art":"profile","number":"06"},
-  {"id":"skill-studio","name":"Skill Studio","category":"Tools","description":"A personal library and editor for reusable developer skills, from Java and backend workflows to debugging and code reviews. Sign-in required.","url":"https://amith-skill-studio.newmorel17.chatgpt.site/","label":"A home for developer playbooks","art":"skills","number":"07","access":"Sign-in required"}
+  {
+    "id": "papers",
+    "name": "Interactive Paper Library",
+    "category": "Learning",
+    "description": "Landmark AI papers, rebuilt to be explored. Animated architectures, interactive articles, and a path from the basics to the frontier.",
+    "url": "https://reasearch-paper-impl.rechargecompare.in/",
+    "label": "Research, made interactive",
+    "art": "papers",
+    "number": "01"
+  },
+  {
+    "id": "ferroprint",
+    "name": "Ferroprint",
+    "category": "Tools",
+    "description": "A blueprint-style sketchpad for system diagrams, flows, wireframes, and floor plans. A little room to think things through.",
+    "url": "https://www.rechargecompare.in/",
+    "label": "From a thought to a blueprint",
+    "art": "blueprint",
+    "number": "02"
+  },
+  {
+    "id": "inside-space",
+    "name": "Inside SPACE",
+    "category": "AI",
+    "description": "A hands-on field guide to agent sandboxes. Follow a command through the system and explore what happens inside.",
+    "url": "https://inside-space.rechargecompare.in/",
+    "label": "Big ideas. Their own space.",
+    "art": "space",
+    "number": "03"
+  },
+  {
+    "id": "second-brain",
+    "name": "Second Brain",
+    "category": "Tools",
+    "description": "A home for good finds, reading, and things to do. A personal library and Kanban board, connected to Notion.",
+    "url": "https://second-brain-obsedian-notion-library.rechargecompare.in/",
+    "label": "A home for your curiosity",
+    "art": "library",
+    "number": "04"
+  },
+  {
+    "id": "harness-atlas",
+    "name": "Cyber Harness Atlas",
+    "category": "AI",
+    "description": "An evidence-led research desk for choosing a cybersecurity agent stack. Explore workflows, models, harnesses, and the sources behind them.",
+    "url": "https://cyber-harness-atlas.vercel.app/",
+    "label": "Find your way through the stack",
+    "art": "atlas",
+    "number": "05"
+  },
+  {
+    "id": "amith",
+    "name": "Amith Athreya",
+    "category": "Personal",
+    "description": "The person behind the projects. Software engineering, selected work, and experiments in backend systems and AI.",
+    "url": "https://athreyaamith.rechargecompare.in/",
+    "label": "A little more about me",
+    "art": "profile",
+    "number": "06"
+  },
+  {
+    "id": "skill-studio",
+    "name": "Skill Studio",
+    "category": "Tools",
+    "description": "A personal library and editor for reusable developer skills, from Java and backend workflows to debugging and code reviews.",
+    "url": "https://waade-skill-studio.vercel.app/",
+    "label": "A home for developer playbooks",
+    "art": "skills",
+    "number": "07"
+  }
 ]

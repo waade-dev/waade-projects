@@ -16,7 +16,7 @@ Edit `projects.json`. Each entry has `id`, `name`, `category`, `description`, `u
 
 The six launch entries were checked against production links in the Vercel dashboard on 24 October 2026. This is a curated snapshot, not a live integration. No Vercel token, private repository URL, environment variable, or account identifier is exposed to visitors.
 
-Project counts and the directory range update from the catalog automatically. Keep the initial fallback count and range, and the no-JavaScript links in `index.html`, in sync when changing the collection. Skill Studio was added from its verified ChatGPT Sites publication; it requires sign-in.
+Project counts and the directory range update from the catalog automatically. Keep the initial fallback count and range, and the no-JavaScript links in `index.html`, in sync when changing the collection. Skill Studio is hosted separately on Vercel. Its editor stores each visitor’s changes in that visitor’s browser.
 
 ## Deploy
 
