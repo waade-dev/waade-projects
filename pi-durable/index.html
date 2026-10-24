@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pi Durable — The work survives | Waade</title>
+  <meta name="description" content="An interactive field guide to Pi Durable. Crash an agent, replay its recovery, and explore how cloud harnesses work.">
+  <meta name="theme-color" content="#f4f3ed"><link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="./style.css"><script type="module" src="./app.js"></script>
+</head>
+<body>
+<a class="skip" href="#lab">Skip to the experiment</a>
+<header class="wrap"><a class="brand" href="/">w<span>.</span> <small>FIELD NOTES / 001</small></a><nav aria-label="Page"><a href="#lab">The experiment</a><a href="#inside">Under the hood</a><a href="#cloud">In the cloud ↗</a></nav></header>
+<main>
+  <section class="hero wrap">
+    <div><p class="eyebrow"><span class="dot"></span> AN INTERACTIVE GUIDE TO PI DURABLE</p><h1>The process stops.<br><em>The work survives.</em></h1><p class="intro">Your agent is halfway through a job. The server crashes.<br class="wide"> Does it know what happened — and what to do next?</p><a class="primary jump" href="#lab">Pull the plug. Find out. <span>↓</span></a><p class="caption">A five-minute exploration. No AI background required.</p></div>
+    <div class="hero-diagram" aria-label="A replaceable process connected to a persistent journal"><div class="diagram-caption">THE IDEA, IN ONE PICTURE</div><div class="process-box"><span class="mono">PROCESS / 01</span><strong>think → act</strong><span class="off">× interrupted</span></div><div class="wire"><span>checkpoint</span>↓</div><div class="journal-box"><span class="mono">PERSISTENT JOURNAL</span><div>✓ prompt received</div><div>✓ tool result saved</div><div class="next">↳ next task waiting</div></div><span class="resume-tag">NEW PROCESS. SAME JOURNAL. ↗</span></div>
+    <div class="hero-foot"><span>01 / TRY IT &nbsp; 02 / UNDERSTAND IT &nbsp; 03 / PLACE IT</span><span>BUILT TO EXPLAIN, NOT TO BENCHMARK</span></div>
+  </section>
+  <section class="wrap section" id="lab">
+    <div class="section-head"><div><p class="eyebrow">01 / THE EXPERIMENT</p><h2>A very inconvenient crash.</h2></div><p>Same coding task. Two ways to recover.<br>Choose a failure, then walk through it.</p></div>
+    <div class="scenario-picker" role="group" aria-label="Choose a crash scenario">
+      <button data-scenario="saved" aria-pressed="true"><span>01</span><strong>After a checkpoint</strong><small>Work already recorded</small></button>
+      <button data-scenario="safe" aria-pressed="false"><span>02</span><strong>During a safe tool</strong><small>Reading a file</small></button>
+      <button data-scenario="unsafe" aria-pressed="false"><span>03</span><strong>After creating a PR</strong><small>The ambiguous outcome</small></button>
+    </div>
+    <div class="lab-panel">
+      <div class="lab-bar"><span><span class="dot"></span> JOB: FIX A BUG AND OPEN A PULL REQUEST</span><span class="pill">SIMULATION</span></div>
+      <div class="lanes"><article class="lane"><div class="lane-head"><h3>Regular Pi session</h3><span class="tag">TERMINAL</span></div><p>Saved conversation history; recovery is user driven.</p><ol id="regular-steps"></ol><div class="lane-status" id="regular-status"></div></article><article class="lane durable"><div class="lane-head"><h3>Pi Durable</h3><span class="tag">PERSISTENT STORAGE</span></div><p>Recorded task state, tool intent, and results.</p><ol id="durable-steps"></ol><div class="lane-status" id="durable-status"></div></article></div>
+      <div class="controls"><button class="primary" id="advance">1. Run to failure point <span>→</span></button><button class="secondary" id="reset">↺ Reset</button><span id="phase-label">READY TO RUN</span></div>
+      <div class="explanation" aria-live="polite" aria-atomic="true"><span class="explain-icon" aria-hidden="true">↳</span><div><strong id="explain-title"></strong><p id="explain-body"></p></div></div>
+      <details class="journal-details"><summary>Inspect the durable journal <span>+</span></summary><ol id="journal"></ol></details>
+    </div>
+    <p class="fineprint">An illustrative state machine, not a running agent. No model requests, file edits, or pull requests are made. Real recovery timing depends on the host and failure.</p>
+  </section>
+  <section class="dark-section" id="inside"><div class="wrap section">
+    <div class="section-head"><div><p class="eyebrow">02 / UNDER THE HOOD</p><h2>What is a harness, anyway?</h2></div><p>The model chooses a next action.<br>The harness manages the work around it.</p></div>
+    <div class="architecture"><div class="architecture-buttons" role="group" aria-label="Explore the architecture"><button data-layer="client" aria-pressed="false"><span>01</span> Your browser <small>the window</small></button><span class="connector">↕</span><button data-layer="harness" aria-pressed="true"><span>02</span> Pi harness <small>the coordinator</small></button><div class="branch"><button data-layer="model" aria-pressed="false">Model <small>reasoning</small></button><button data-layer="storage" aria-pressed="false">Storage <small>memory of the run</small></button><button data-layer="tools" aria-pressed="false">Tools / sandbox <small>actions & files</small></button></div><button data-layer="host" aria-pressed="false"><span>03</span> Cloud host <small>compute & wake-up</small></button></div><article class="architecture-copy" aria-live="polite"><p class="eyebrow" id="layer-kicker"></p><h3 id="layer-title"></h3><p id="layer-body"></p><div class="rule" id="layer-rule"></div></article></div>
+    <div class="formula"><span>Durability</span><b>=</b><span>persistent state</span><b>+</b><span>recovery semantics</span><b>+</b><span>a way to wake up</span></div>
+  </div></section>
+  <section class="wrap section" id="better"><div class="section-head"><div><p class="eyebrow">THE PRACTICAL QUESTION</p><h2>Better for what?</h2></div><p>Same model. Different operational behavior.<br>Choose reliability when the job needs it.</p></div>
+    <div class="comparison-scroll"><table><caption class="sr-only">Regular session compared with a durable cloud agent</caption><thead><tr><th>Situation</th><th>Regular Pi / local process</th><th>Durable cloud agent</th></tr></thead><tbody><tr><th>You close the browser</th><td>A local CLI can keep running independently.</td><td>A properly detached cloud job keeps running; reconnect to its state.</td></tr><tr><th>The worker crashes</th><td>History can help you continue manually.</td><td>A new worker reopens recorded state and recovers unfinished work.</td></tr><tr><th>Your laptop sleeps</th><td>Local compute pauses with your laptop.</td><td>Remote compute can continue without your laptop.</td></tr><tr><th>A tool may have sent something</th><td>You need to check the outside world.</td><td>You still need to resolve an uncertain external outcome.</td></tr><tr><th>A quick, supervised edit</th><td>Simple setup and direct feedback.</td><td>Extra storage writes, infrastructure, and possible latency.</td></tr><tr><th>Quality of the answer</th><td>Depends on model, context, and tools.</td><td>Durability itself does not improve reasoning.</td></tr></tbody></table></div>
+    <div class="takeaway"><span>MY TAKE FOR YOUR SETUP</span><p>Keep regular Pi for interactive work on your Mac. Explore a durable cloud harness when you want a job to outlive your session — such as waiting for CI, processing a queue, or returning to unfinished research.</p></div>
+  </section>
+  <section class="wrap section cloud-section" id="cloud"><div class="section-head"><div><p class="eyebrow">03 / CHOOSE WHERE IT LIVES</p><h2>“In the cloud” has layers.</h2></div><p>Hosting gives it a place to run.<br>The harness gives it a way to recover.</p></div>
+    <div class="cloud-picker" role="group" aria-label="Select a hosting approach"><button data-cloud="vercel" aria-pressed="true">▲ Vercel</button><button data-cloud="cloudflare" aria-pressed="false">☁ Cloudflare</button><button data-cloud="self" aria-pressed="false">⌘ Your own server</button></div>
+    <article class="cloud-card"><div><span class="pill" id="cloud-badge"></span><h3 id="cloud-title"></h3><p id="cloud-body"></p><a id="cloud-source" target="_blank" rel="noopener noreferrer">Read the official guide ↗</a></div><div class="cloud-flow" id="cloud-flow"></div></article>
+    <p class="fineprint">Vercel and Cloudflare integrations are beta; Pi Durable is experimental. This explainer is a static website hosted on Vercel — it does not deploy an agent backend.</p>
+  </section>
+  <section class="wrap section details-section"><p class="eyebrow">A LITTLE DEEPER</p><h2>The details that matter.</h2>
+    <details><summary>Is it exactly-once execution?<span>+</span></summary><p>No blanket guarantee. A remote service can accept an action before the local result is saved. Use provider-supported idempotency keys, or inspect remote state before deciding whether to retry. Deduplicating a submitted request does not deduplicate every external side effect.</p></details>
+    <details><summary>Does it save the model’s brain mid-thought?<span>+</span></summary><p>No. It records task and conversation state. An interrupted model request may be issued again; an incomplete response is not a finished answer. Think “recover from a recorded boundary,” rather than freezing and restoring every CPU instruction.</p></details>
+    <details><summary>Are the workspace files durable too?<span>+</span></summary><p>Only if you arrange that separately. A persistent task journal does not automatically preserve an ephemeral filesystem. Plan workspace storage and sandbox lifecycle alongside conversation storage. On Vercel, model-controlled commands belong in a virtual workspace or sandbox, not the function host’s disk.</p></details>
+    <details><summary>What would I actually need to build?<span>+</span></summary><p>A UI and authenticated API; a Pi harness with configured model and tools; persistent run storage; a host that resumes pending work; and a suitable tool execution environment. Add session ownership, logging, cost limits, and external-action checks before exposing real tools to users.</p></details>
+  </section>
+  <section class="wrap sources"><div><p class="eyebrow">FOLLOW THE EVIDENCE</p><h2>Keep learning.</h2><p>Official documentation reviewed 24 October 2026.<br>Examples and diagrams are simplified for learning.</p></div><div><a href="https://earendil.com/posts/pi-durable/" target="_blank" rel="noopener noreferrer">01 <span>Pi Durable: the original idea</span> ↗</a><a href="https://vercel.com/docs/agent-harnesses/pi" target="_blank" rel="noopener noreferrer">02 <span>Running Pi durably on Vercel</span> ↗</a><a href="https://developers.cloudflare.com/agents/harnesses/pi/" target="_blank" rel="noopener noreferrer">03 <span>Pi on Cloudflare Agents</span> ↗</a></div></section>
+</main><footer class="wrap"><a class="brand" href="/">waade<span>.</span></a><span>SMALL EXPLANATIONS. USEFUL MENTAL MODELS.</span><a href="#">Back to the top ↑</a></footer>
+<noscript><p class="wrap">Enable JavaScript to try the simulations and explore the architecture. The comparison and technical details remain available below.</p></noscript>
+</body></html>

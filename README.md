@@ -21,3 +21,7 @@ Project counts and the directory range update from the catalog automatically. Ke
 ## Deploy
 
 Import this repository into Vercel with the **Other** framework preset. There are no install or build commands. Serve the repository root. Pushes to the production branch redeploy the site automatically after Git integration is connected.
+
+## Pi Durable field guide
+
+`/pi-durable/` contains a standalone educational explainer with three deterministic crash scenarios, an architecture explorer, and hosting comparisons. It makes no model or external tool calls. The journal and PR are simulated. Official sources are linked on the page; recheck them when updating the beta integration details.

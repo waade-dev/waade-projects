@@ -68,5 +68,15 @@
     "label": "A home for developer playbooks",
     "art": "skills",
     "number": "07"
+  },
+  {
+    "id": "pi-durable",
+    "name": "Pi Durable — The Work Survives",
+    "category": "Learning",
+    "description": "Crash an agent, inspect its recovery, and explore how durable cloud harnesses work. An interactive guide to Pi, Vercel, and Cloudflare.",
+    "url": "https://waade-projects.vercel.app/pi-durable/",
+    "label": "Pull the plug. Keep the work.",
+    "art": "durable",
+    "number": "08"
   }
 ]
