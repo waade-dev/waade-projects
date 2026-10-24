@@ -4,12 +4,12 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pi Durable — The work survives | Waade</title>
   <meta name="description" content="An interactive field guide to Pi Durable. Crash an agent, replay its recovery, and explore how cloud harnesses work.">
-  <meta name="theme-color" content="#f4f3ed"><link rel="icon" href="/favicon.svg">
-  <link rel="stylesheet" href="./style.css"><script type="module" src="./app.js"></script>
+  <meta name="theme-color" content="#f4f3ed"><link rel="icon" href="../favicon.svg">
+  <link rel="stylesheet" href="./style.css"><script defer src="./model.js"></script><script defer src="./app.js"></script>
 </head>
-<body>
+<body id="top">
 <a class="skip" href="#lab">Skip to the experiment</a>
-<header class="wrap"><a class="brand" href="/">w<span>.</span> <small>FIELD NOTES / 001</small></a><nav aria-label="Page"><a href="#lab">The experiment</a><a href="#inside">Under the hood</a><a href="#cloud">In the cloud ↗</a></nav></header>
+<header class="wrap"><a class="brand" href="../index.html">w<span>.</span> <small>FIELD NOTES / 001</small></a><nav aria-label="Page"><a href="#lab">The experiment</a><a href="#inside">Under the hood</a><a href="#cloud">In the cloud ↗</a></nav></header>
 <main>
   <section class="hero wrap">
     <div><p class="eyebrow"><span class="dot"></span> AN INTERACTIVE GUIDE TO PI DURABLE</p><h1>The process stops.<br><em>The work survives.</em></h1><p class="intro">Your agent is halfway through a job. The server crashes.<br class="wide"> Does it know what happened — and what to do next?</p><a class="primary jump" href="#lab">Pull the plug. Find out. <span>↓</span></a><p class="caption">A five-minute exploration. No AI background required.</p></div>
@@ -53,6 +53,6 @@
     <details><summary>What would I actually need to build?<span>+</span></summary><p>A UI and authenticated API; a Pi harness with configured model and tools; persistent run storage; a host that resumes pending work; and a suitable tool execution environment. Add session ownership, logging, cost limits, and external-action checks before exposing real tools to users.</p></details>
   </section>
   <section class="wrap sources"><div><p class="eyebrow">FOLLOW THE EVIDENCE</p><h2>Keep learning.</h2><p>Official documentation reviewed 24 October 2026.<br>Examples and diagrams are simplified for learning.</p></div><div><a href="https://earendil.com/posts/pi-durable/" target="_blank" rel="noopener noreferrer">01 <span>Pi Durable: the original idea</span> ↗</a><a href="https://vercel.com/docs/agent-harnesses/pi" target="_blank" rel="noopener noreferrer">02 <span>Running Pi durably on Vercel</span> ↗</a><a href="https://developers.cloudflare.com/agents/harnesses/pi/" target="_blank" rel="noopener noreferrer">03 <span>Pi on Cloudflare Agents</span> ↗</a></div></section>
-</main><footer class="wrap"><a class="brand" href="/">waade<span>.</span></a><span>SMALL EXPLANATIONS. USEFUL MENTAL MODELS.</span><a href="#">Back to the top ↑</a></footer>
+</main><footer class="wrap"><a class="brand" href="../index.html">waade<span>.</span></a><span>SMALL EXPLANATIONS. USEFUL MENTAL MODELS.</span><a href="#top">Back to the top ↑</a></footer>
 <noscript><p class="wrap">Enable JavaScript to try the simulations and explore the architecture. The comparison and technical details remain available below.</p></noscript>
 </body></html>

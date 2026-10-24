@@ -25,3 +25,5 @@ Import this repository into Vercel with the **Other** framework preset. There ar
 ## Pi Durable field guide
 
 `/pi-durable/` contains a standalone educational explainer with three deterministic crash scenarios, an architecture explorer, and hosting comparisons. It makes no model or external tool calls. The journal and PR are simulated. Official sources are linked on the page; recheck them when updating the beta integration details.
+
+The explainer uses ordered, deferred classic scripts so it also works when `pi-durable/index.html` is opened directly from disk. Its asset and home links are relative. Run its loader and recovery regression checks with `node --test tests/pi-durable.test.cjs`.

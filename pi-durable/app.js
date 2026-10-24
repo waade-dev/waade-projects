@@ -1,7 +1,9 @@
-import {steps, scenarios, initial, advance, view} from './model.mjs';
+(function () {
+'use strict';
+const {steps, scenarios, initial, advance, view} = window.PiDurableModel;
 const $ = (id) => document.getElementById(id);
 let state = initial();
-const labels = ['1. Run to failure point', '2. Crash the process', '3. Restart the worker', '4. Finish recovery', 'Experiment complete'];
+const labels = ['1. Run to failure point', '2. Crash the process', '3. Restart the worker', '4. Finish recovery', 'Run again'];
 const phaseLabels = ['READY TO RUN', 'AT THE FAILURE POINT', 'PROCESS OFFLINE', 'NEW WORKER RECOVERING', 'WORK COMPLETE'];
 const statusNames = {done:'Saved / complete', pending:'Waiting', active:'In progress', unknown:'Interrupted', replay:'Replay safe read', verify:'Check remote PR'};
 function renderSteps(id, values) {
@@ -16,7 +18,7 @@ function renderSteps(id, values) {
 function render() {
   const s=scenarios[state.scenario], v=view(state), p=state.phase;
   renderSteps('regular-steps',v.regular); renderSteps('durable-steps',v.durable);
-  $('advance').textContent=labels[p]+(p===4?' ✓':' →'); $('advance').disabled=p===4;
+  $('advance').textContent=labels[p]+(p===4?' ↺':' →');
   $('phase-label').textContent=phaseLabels[p];
   $('regular-status').textContent=['Waiting for you to begin.','Process running.','Process stopped. Conversation history may still exist.','Session available; user must inspect and continue.','Awaiting user-directed recovery.'][p];
   $('durable-status').textContent=['Waiting for you to begin.','Recording durable state.','Process stopped. Persistent journal remains.','Replacement worker opened the same storage.','Recovered and finished. One PR in this example.'][p];
@@ -40,7 +42,7 @@ document.querySelectorAll('[data-scenario]').forEach(button=>button.addEventList
   document.querySelectorAll('[data-scenario]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
   state=initial(button.dataset.scenario);render();
 }));
-$('advance').addEventListener('click',()=>{state=advance(state);render();});
+$('advance').addEventListener('click',()=>{state=state.phase===4?initial(state.scenario):advance(state);render();});
 $('reset').addEventListener('click',()=>{state=initial(state.scenario);render();});
 const layers={
   client:['THE WINDOW','Closing a tab is not killing a worker.','Your browser sends requests and displays the run. When work is owned by a cloud backend, the browser can disconnect and later reconnect to recorded state. The application must implement this separation.','A chat screen is a client. It is not the agent’s whole runtime.'],
@@ -60,3 +62,5 @@ const clouds={
 function selectCloud(key){const c=clouds[key];$('cloud-badge').textContent=c.badge;$('cloud-title').textContent=c.title;$('cloud-body').textContent=c.body;$('cloud-source').href=c.url;$('cloud-flow').replaceChildren(...c.flow.map((name,i)=>{const row=document.createElement('div'),num=document.createElement('span');num.textContent=String(i+1).padStart(2,'0');row.append(num,document.createTextNode(name));return row;}));}
 document.querySelectorAll('[data-cloud]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-cloud]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));selectCloud(button.dataset.cloud);}));
 render();selectLayer('harness');selectCloud('vercel');
+
+})();
