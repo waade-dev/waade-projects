@@ -9,7 +9,7 @@ const {initial, advance, view} = require('../pi-durable/model.js');
 test('direct-file entry uses ordered classic scripts and relative local assets', () => {
   const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   const scripts = [...html.matchAll(/<script([^>]*)src="([^"]+)"([^>]*)><\/script>/g)];
-  assert.deepEqual(scripts.map(s=>s[2]), ['./model.js', './app.js']);
+  assert.deepEqual(scripts.map(s=>s[2]), ['./model.js', './app.js', '../analytics.js']);
   for (const script of scripts) {
     assert.match(script[1] + script[3], /\bdefer\b/);
     assert.doesNotMatch(script[1] + script[3], /\b(?:module|async)\b/);
