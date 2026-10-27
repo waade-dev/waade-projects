@@ -1,9 +1,4 @@
-const grid = document.querySelector('#project-grid');
-const search = document.querySelector('#search');
-const filters = [...document.querySelectorAll('.filter')];
-const status = document.querySelector('#results-status');
-let projects = [];
-let category = 'All';
+import { ProjectDial, wrapIndex, wheelPixels } from './dial.mjs';
 
 const art = {
   durable: '<g fill="none" stroke="currentColor" stroke-width="1.5"><rect x="58" y="35" width="94" height="57" rx="4"/><path d="m78 55 8 8-8 8m20 0h29m25-9h39m-8-5 8 5-8 5"/><rect x="193" y="47" width="77" height="102" rx="4" fill="var(--art-paper)"/><path d="m207 70 4 4 7-9m7 7h29m-47 20 4 4 7-9m7 7h29m-47 20 4 4 7-9m7 7h29M104 92v39h66m-8-5 8 5-8 5"/></g><text x="60" y="157" fill="currentColor" font-size="10" font-family="monospace">CHECKPOINT → RESUME</text>',
@@ -16,61 +11,392 @@ const art = {
   profile: '<g fill="none" stroke="currentColor" stroke-width="1.4"><rect x="69" y="34" width="187" height="117" rx="6"/><circle cx="113" cy="81" r="18"/><path d="M89 123c0-22 48-22 48 0m18-57h72m-72 12h49m-49 19h72m-72 11h60m-60 11h33"/></g><text x="79" y="24" fill="currentColor" font-size="9" font-family="monospace">HELLO, WORLD.</text><path d="m245 138 7 16 7-16m-7 16v-25" fill="none" stroke="currentColor" stroke-width="1.4"/>'
 };
 
-function card(project) {
-  const article = document.createElement('article');
-  article.className = `project-card art-${project.art}`;
-  const url = new URL(project.url);
-  // All content comes from the curated local catalog; text is assigned separately.
-  article.innerHTML = `<a class="card-link" target="_blank" rel="noopener noreferrer"><div class="card-art" aria-hidden="true"><div class="art-caption"><span class="art-number"></span><span class="art-label"></span></div><svg viewBox="0 0 328 184" fill="none">${art[project.art] || art.papers}</svg><span class="art-corner">↗</span></div><div class="card-body"><div class="card-meta"><span class="category-tag"></span><span class="card-domain"></span></div><h3><span class="project-name"></span><span class="card-arrow" aria-hidden="true">↗</span></h3><p class="project-description"></p><span class="card-visit">Explore website <span aria-hidden="true">↗</span></span></div></a>`;
-  const link = article.querySelector('a');
-  link.href = url.href;
-  link.setAttribute('aria-label', `${project.name} — opens in a new tab`);
-  article.querySelector('.art-number').textContent = `W / ${project.number}`;
-  article.querySelector('.art-label').textContent = project.label;
-  article.querySelector('.category-tag').textContent = project.category;
-  article.querySelector('.card-domain').textContent = url.hostname.replace(/^www\./, '');
-  article.querySelector('.project-name').textContent = project.name;
-  article.querySelector('.project-description').textContent = project.description;
-  if (project.access) article.querySelector('.card-visit').firstChild.textContent = `${project.access} `;
-  return article;
-}
+const $ = id => document.getElementById(id);
+const root = document.documentElement;
+const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+const mobile = matchMedia('(max-width: 720px)');
+let projects = [], views = [], active = 'about', category = 'All';
+let motion = true, tree = true, phase = 0, treePhase = 0, raf = 0, lastFrame = 0;
+let pointer = { x: .5, y: .5 }, colors, sculptureCanvas = null, sculptureContext = null;
+let mobileTarget = null;
+const dial = new ProjectDial();
+let dialFrame = 0, wheelItems = [], dialReady = false, drag = null, suppressDialClickUntil = 0, dialCommitPending = false;
+let reducedWheelDelta = 0;
+const treeCanvas = $('tree-canvas');
+const treeContext = treeCanvas.getContext('2d');
+const escape = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const graphic = p => `<svg viewBox="0 0 328 184" fill="none" aria-hidden="true">${art[p.art] || art.papers}</svg>`;
+const external = (url, label, className = 'text-link') => `<a class="${className}" href="${escape(url)}" target="_blank" rel="noopener noreferrer">${escape(label)} <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a>`;
+const prompt = cmd => `<p class="prompt">amith@waade <span>~ (main)</span><br>❯ <b>${escape(cmd)}</b></p>`;
+const effectiveMotion = () => motion && !reduced.matches;
+const preferences = {
+  get(key, fallback) { try { return localStorage.getItem(`waade-${key}`) ?? fallback; } catch { return fallback; } },
+  set(key, value) { try { localStorage.setItem(`waade-${key}`, String(value)); } catch { /* Preferences are optional. */ } }
+};
 
-function render() {
-  const query = search.value.trim().toLocaleLowerCase();
-  const visible = projects.filter(p => (category === 'All' || p.category === category) && `${p.name} ${p.description} ${p.category} ${p.url}`.toLocaleLowerCase().includes(query));
-  grid.replaceChildren(...visible.map(card));
-  document.querySelector('#empty-state').hidden = visible.length > 0;
-  document.querySelector('#clear-search').hidden = !search.value;
-  document.querySelector('.search-box kbd').hidden = !!search.value;
-  status.textContent = !query && category === 'All' ? `Showing all ${projects.length} projects` : `${visible.length} ${visible.length === 1 ? 'project' : 'projects'}${category !== 'All' ? ` in ${category}` : ''}${query ? ` matching “${search.value.trim()}”` : ''}`;
-  filters.forEach(button => {
-    const selected = button.dataset.category === category;
-    button.classList.toggle('active', selected);
-    button.setAttribute('aria-pressed', String(selected));
+function aboutHTML() {
+  return `<div class="specimen"><div class="specimen-label"><span>WAADE / CURIOSITY FIELD</span><span>an idea, taking shape.</span></div><canvas id="sculpture-canvas" aria-hidden="true"></canvas><div class="specimen-word"><strong>waade.</strong><small>AMITH ATHREYA<br>SOFTWARE + EXPERIMENTS</small></div><div class="specimen-bottom"><span>points → connections → possibilities</span><span>study / 001</span></div></div>${prompt('whoami')}<h1>Things I’ve made.<br>Places to <em>explore.</em><span class="cursor">_</span></h1><p class="intro-description">I’m Amith. I build software and make things to understand them better. Useful tools, curious experiments, and ideas made interactive—these are my corners of the internet.</p><div class="intro-actions"><a class="text-link" href="#projects">Explore ${projects.length} projects <span aria-hidden="true">↗</span></a>${external('https://github.com/waade-dev', 'Find me on GitHub')}</div><dl class="facts"><dt>focus</dt><dd>Software engineering · backend systems · AI</dd><dt>approach</dt><dd>Build it. Explore it. Understand it.</dd><dt>currently</dt><dd>Following the next interesting question.</dd></dl>`;
+}
+function projectHTML(p) {
+  return `${prompt(`inspect projects/${p.id}`)}<p class="eyebrow">${escape(p.category)} / PROJECT ${escape(p.number)}</p><h1 class="project-heading">${escape(p.name)}</h1><p class="project-description">${escape(p.description)}</p><div class="project-plate"><div class="specimen-label"><span>W / ${escape(p.number)}</span><span>${escape(p.label)}</span></div>${graphic(p)}</div>${external(p.url, p.access || 'Explore website', 'visit-link')}<p class="project-domain">${escape(new URL(p.url).hostname)}</p><div class="project-navigation"><a href="#projects">← all projects</a><button data-next>next discovery →</button></div>`;
+}
+function directoryHTML() {
+  const filtered = projects.filter(p => category === 'All' || p.category === category);
+  return `${prompt('ls projects/')}<p class="eyebrow">THE COLLECTION / ${String(projects.length).padStart(2,'0')} INDEPENDENT PROJECTS</p><h1>Follow a thread.<br><em>Find something interesting.</em></h1><div class="filters" role="group" aria-label="Filter projects by category">${['All',...new Set(projects.map(p=>p.category))].map(c => `<button class="filter" data-category="${c}" aria-pressed="${category === c}">${c === 'All' ? 'All projects' : c}</button>`).join('')}</div><div class="directory-list">${filtered.map(p => `<button class="directory-item" data-view="${p.id}"><span class="item-number">${p.number}</span><span><strong>${escape(p.name)}</strong><small>${escape(p.category)} / ${escape(p.label)}</small></span><span class="accent" aria-hidden="true">↗</span></button>`).join('')}</div>`;
+}
+function helpHTML() {
+  return `${prompt('help')}<p class="eyebrow">A NOTEBOOK THAT TAKES DIRECTIONS</p><h1>A little less clicking.<br><em>A little more curiosity.</em></h1><p class="intro-description">Type a command in the prompt below, or search for anything in the collection. All project pages can also be selected in the explorer.</p><dl class="help-list"><dt>projects / ls</dt><dd>Explore the full collection.</dd><dt>about / whoami</dt><dd>Meet the person behind it.</dd><dt>next / prev</dt><dd>Turn the project wheel.</dd><dt>random</dt><dd>A surprise from the collection.</dd><dt>cd polylume</dt><dd>Go straight to a project by its ID.</dd><dt>theme paper</dt><dd>Try paper, carbon, or moss.</dd><dt>motion off</dt><dd>Pause every animation.</dd><dt>tree off</dt><dd>Freeze the rotating branch.</dd><dt>↑ ↓ / Enter</dt><dd>Explore, then focus the selected page.</dd><dt>/ / Escape</dt><dd>Open search / close search.</dd></dl>`;
+}
+function updateWheel() {
+  const index = views.findIndex(v => v.id === active);
+  const selected = Math.max(0,index);
+  const position = mobile.matches ? selected : dial.position;
+  $('wheel-scene').dataset.dialState = mobile.matches ? 'native' : dial.mode;
+  $('wheel-scene').dataset.dialPosition = position.toFixed(4);
+  const nearest = wrapIndex(position, views.length);
+  wheelItems.forEach(({li,button},i) => {
+    const distance = ((i-position+views.length/2)%views.length+views.length)%views.length-views.length/2;
+    const angle = distance*.39;
+    const vars = {x:`${164*(1-Math.cos(angle))}px`,y:`${275*Math.sin(angle)}px`,depth:`${-Math.abs(distance)*28}px`,ry:`${-distance*8}deg`,rz:`${distance*-8}deg`,opacity:String(Math.max(.13,1-Math.abs(distance)*.18)),z:String(20-Math.abs(distance))};
+    for (const [key,value] of Object.entries(vars)) li.style.setProperty(`--${key}`,value);
+    button.classList.toggle('is-nearest', i===nearest && active!=='help');
+    button.setAttribute('aria-current', String(i===selected && active!=='help'));
+    button.tabIndex = i===selected ? 0 : -1;
   });
+  $('wheel-counter').textContent = `${String(nearest+1).padStart(2,'0')} / ${views.length}`;
+}
+function commitDial() {
+  if (!views.length) return;
+  if (!dialCommitPending) { updateWheel(); return; }
+  dialCommitPending = false;
+  const id = views[wrapIndex(dial.position,views.length)].id;
+  if (id !== active) select(id,true,{fromDial:true});
+  else updateWheel();
+}
+function runDial(now) {
+  dialFrame = 0;
+  const moving = dial.step(now);
+  updateWheel();
+  if (moving) dialFrame = requestAnimationFrame(runDial);
+  else if (dial.mode === 'idle') commitDial();
+}
+function startDial() {
+  if (!effectiveMotion()) {
+    dial.finish(); updateWheel(); commitDial(); return;
+  }
+  if (!dialFrame) dialFrame = requestAnimationFrame(runDial);
+}
+function syncDial(index) {
+  cancelAnimationFrame(dialFrame); dialFrame=0;
+  dialCommitPending=false;
+  dial.goTo(index,views.length,!effectiveMotion()||mobile.matches||!dialReady);
+  dialReady=true;
+  if (dial.mode!=='idle') startDial();
+}
+function centerMobile() {
+  if (!mobile.matches) return;
+  const button = $('wheel').querySelector('[aria-current="true"]');
+  if (button) {
+    const scene = $('wheel-scene');
+    const left = button.parentElement.offsetLeft-(scene.clientWidth-button.parentElement.offsetWidth)/2;
+    if (Math.abs(scene.scrollLeft-left)<2) { mobileTarget=null; return; }
+    mobileTarget=active;
+    scene.scrollTo({left,behavior:effectiveMotion()?'smooth':'instant'});
+  }
+}
+function select(id, writeHash = true, {fromDial=false} = {}) {
+  if (id === 'ferroprint') id = 'polylume';
+  const fromSearch = $('search-dialog').open;
+  if (fromSearch) closeSearch();
+  const valid = views.some(v => v.id === id) || id === 'help';
+  active = valid ? id : 'about';
+  const p = projects.find(p => p.id === active);
+  $('content').innerHTML = p ? projectHTML(p) : active === 'projects' ? directoryHTML() : active === 'help' ? helpHTML() : aboutHTML();
+  $('content').scrollTop = 0;
+  sculptureCanvas = $('sculpture-canvas');
+  sculptureContext = sculptureCanvas?.getContext('2d');
+  $('current-path').textContent = p ? `~/projects/${p.id}` : active === 'about' ? '~' : `~/${active}`;
+  $('selected-label').textContent = p ? p.name.toUpperCase() : active === 'about' ? 'NOTEBOOK / WHOAMI' : active.toUpperCase();
+  document.querySelectorAll('[data-nav]').forEach(a => a.setAttribute('aria-current', (a.dataset.nav === (p?'projects':active)) ? 'page' : 'false'));
+  $('announcement').textContent = `${p?.name || (active==='about'?'Notebook':active)} selected`;
+  $('command-results').hidden = true;
+  if (!fromDial) syncDial(Math.max(0,views.findIndex(v=>v.id===active)));
+  updateWheel(); centerMobile(); resizeCanvases(); draw();
+  if (fromSearch) $('content').focus({preventScroll:true});
+  if (writeHash && location.hash !== `#${active}`) history.pushState(null,'',`#${active}`);
+}
+function move(delta, focus=false) {
+  if (!views.length) return;
+  const index = Math.max(0, views.findIndex(v => v.id === active));
+  select(views[(index+delta+views.length)%views.length].id);
+  if (focus) $('wheel').querySelector('[aria-current="true"]')?.focus({preventScroll:true});
+}
+function buildWheel() {
+  $('wheel').innerHTML = views.map(v => `<li><button class="wheel-card" data-view="${v.id}" aria-label="${escape(v.name)}" aria-current="false" tabindex="-1"><span class="wheel-art">${v.art ? graphic(v) : `<span class="wheel-symbol">${v.symbol}</span>`}</span><span class="wheel-name">${escape(v.short || v.name)}</span></button></li>`).join('');
+  wheelItems=[...$('wheel').children].map(li=>({li,button:li.querySelector('button')}));
+}
+function setTheme(theme) {
+  if (!['carbon','moss','paper'].includes(theme)) return false;
+  root.dataset.theme = theme; $('theme-select').value = theme;
+  document.querySelector('meta[name="theme-color"]').content = getComputedStyle(root).getPropertyValue('--bg').trim();
+  preferences.set('theme',theme); colors = null; draw(); return true;
+}
+function syncMotion() {
+  if ((!effectiveMotion() || document.hidden) && dial.mode!=='idle') {
+    cancelAnimationFrame(dialFrame);dialFrame=0;
+    dial.finish();if(views.length)commitDial();
+  }
+  root.dataset.motion = effectiveMotion() ? 'on' : 'off'; root.dataset.tree = tree ? 'on' : 'off';
+  $('motion-button').textContent = reduced.matches ? 'reduced ○' : motion ? 'on ●' : 'off ○';
+  $('motion-button').setAttribute('aria-pressed',String(effectiveMotion()));
+  $('motion-button').disabled = reduced.matches;
+  $('tree-button').textContent = tree ? 'rotate ↻' : 'paused ○';
+  $('tree-button').setAttribute('aria-pressed',String(tree));
+  cancelAnimationFrame(raf); lastFrame = 0; draw();
+  if (effectiveMotion() && !document.hidden) raf = requestAnimationFrame(animate);
+}
+function feedback(text) { $('command-feedback').textContent = text; }
+function openSearch() {
+  if (!$('search-dialog').open) {
+    $('command-input').value='';
+    $('search-dialog').showModal();
+    $('search-toggle').setAttribute('aria-expanded','true');
+  }
+  searchResults();
+  $('command-input').focus({preventScroll:true});
+}
+function closeSearch() {
+  $('search-dialog').close();
+  $('search-toggle').setAttribute('aria-expanded','false');
+}
+function searchResults() {
+  const query = $('command-input').value.trim().toLowerCase();
+  const box = $('command-results');
+  const found = projects.filter(p => `${p.id} ${p.name} ${p.description} ${p.category}`.toLowerCase().includes(query));
+  box.innerHTML = found.length ? found.map(p=>`<button data-view="${p.id}"><span>${escape(p.name)}</span><span class="muted">${escape(p.category)} ↵</span></button>`).join('') : '<p>No matching projects. Press Enter to run a command, or try another search.</p>';
+  box.hidden=false;
+  feedback(query ? `${found.length} ${found.length===1?'project':'projects'} found` : `${projects.length} projects to explore`);
+}
+function command(raw) {
+  if (!views.length) { feedback('The collection is still opening. Please try again.'); return; }
+  const text = raw.trim().toLowerCase();
+  if (!text) return;
+  const [name,...words] = text.split(/\s+/), arg=words.join(' ');
+  $('command-results').hidden=true;
+  if (['projects','ls','work'].includes(name)) select('projects');
+  else if (['about','whoami','home'].includes(name)) select('about');
+  else if (name==='help') select('help');
+  else if (['next','prev','previous'].includes(name)) move(name==='next'?1:-1);
+  else if (name==='random') select(projects[Math.floor(Math.random()*projects.length)].id);
+  else if (name==='theme') { if(!setTheme(arg)) { feedback('Try theme carbon, moss, or paper.'); return; } }
+  else if (['motion','tree'].includes(name)) {
+    if (!['on','off'].includes(arg)) { feedback(`Try ${name} on or ${name} off.`); return; }
+    if(name==='motion') { motion=arg==='on'; preferences.set('motion',motion); } else {tree=arg==='on';preferences.set('tree',tree);}
+    syncMotion();
+  } else if (name==='clear') { $('command-input').value=''; feedback('follow your curiosity.');return; }
+  else {
+    const query = name==='cd' ? arg.replace(/^~?\/?projects\//,'').replace(/\/$/,'') : text;
+    const match = views.find(v => v.id===query || v.name.toLowerCase()===query) || projects.find(p=>`${p.name} ${p.description}`.toLowerCase().includes(query));
+    if(!match) {feedback('Nothing found. Try help or projects.'); return;}
+    select(match.id);
+  }
+  $('command-input').value=''; feedback(`${text} ↵`);
 }
 
-filters.forEach(button => button.addEventListener('click', () => { category = button.dataset.category; render(); }));
-search.addEventListener('input', render);
-document.querySelector('#clear-search').addEventListener('click', () => { search.value = ''; render(); search.focus(); });
-document.querySelector('#reset-filters').addEventListener('click', () => { category = 'All'; search.value = ''; render(); search.focus(); });
-document.querySelector('#reload-projects').addEventListener('click', () => location.reload());
-document.addEventListener('keydown', event => {
-  if (event.key === '/' && !event.metaKey && !event.ctrlKey && !event.altKey && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName) && !document.activeElement.isContentEditable) { event.preventDefault(); search.focus(); }
-});
-document.querySelector('#back-to-top').addEventListener('click', event => { event.preventDefault(); window.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' }); });
+// A rotating three-dimensional branch and a torus knot, projected onto 2D canvases.
+// No WebGL, remote assets, telemetry, or animation dependencies.
+function fit(canvas) {
+  if (!canvas) return;
+  const rect=canvas.getBoundingClientRect(), dpr=Math.min(devicePixelRatio||1,2);
+  if (!rect.width || !rect.height) return;
+  canvas.width=Math.round(rect.width*dpr); canvas.height=Math.round(rect.height*dpr);
+  canvas.getContext('2d')?.setTransform(dpr,0,0,dpr,0,0);
+}
+function resizeCanvases(){ fit(treeCanvas);fit(sculptureCanvas); }
+function palette(){ if(!colors){const style=getComputedStyle(root);colors={accent:style.getPropertyValue('--accent').trim(),muted:style.getPropertyValue('--muted').trim(),warm:style.getPropertyValue('--warm').trim()};} return colors; }
+function project3d(x,y,z,rotation,tilt=0) {
+  const xx=x*Math.cos(rotation)-z*Math.sin(rotation), zz=x*Math.sin(rotation)+z*Math.cos(rotation);
+  return [xx,y*Math.cos(tilt)-zz*Math.sin(tilt),y*Math.sin(tilt)+zz*Math.cos(tilt)];
+}
+function drawTree() {
+  if(!treeContext || mobile.matches) return;
+  const w=treeCanvas.clientWidth,h=treeCanvas.clientHeight;
+  treeContext.clearRect(0,0,w,h);treeContext.strokeStyle=palette().muted;treeContext.lineWidth=.65;
+  const point=(x,y,z)=>{const [xx,yy,zz]=project3d(x,y,z,treePhase);return [w*.56+xx*(1+zz*.003),h*.94-yy*h*.84,zz];};
+  const line=(a,b,alpha)=>{treeContext.globalAlpha=alpha;treeContext.beginPath();treeContext.moveTo(a[0],a[1]);treeContext.lineTo(b[0],b[1]);treeContext.stroke();};
+  line(point(0,0,0),point(0,1,0),.65);
+  for(let level=0;level<17;level++){
+    const y=.05+level*.054;
+    for(let branch=0;branch<3;branch++){
+      const angle=branch*Math.PI*2/3+level*.79;
+      const radius=18+Math.sin(level*.17)*23;
+      const start=point(0,y,0),end=point(Math.cos(angle)*radius,y+.13,Math.sin(angle)*radius);
+      const alpha=.25+(end[2]+45)/150;
+      line(start,end,alpha);
+      for(let k=1;k<4;k++){
+        const f=k/4,xx=Math.cos(angle)*radius*f,zz=Math.sin(angle)*radius*f;
+        const from=point(xx,y+.13*f,zz);
+        line(from,point(xx+Math.cos(angle+1)*12,y+.13*f+.065,zz+Math.sin(angle+1)*12),alpha*.7);
+        line(from,point(xx+Math.cos(angle-1)*12,y+.13*f+.065,zz+Math.sin(angle-1)*12),alpha*.7);
+      }
+    }
+  }
+  treeContext.globalAlpha=.3;treeContext.beginPath();treeContext.ellipse(w*.56,h*.95,37,5,0,0,Math.PI*2);treeContext.stroke();treeContext.globalAlpha=1;
+}
+function drawSculpture() {
+  if(!sculptureCanvas || !sculptureContext) return;
+  const ctx=sculptureContext,w=sculptureCanvas.clientWidth,h=sculptureCanvas.clientHeight;
+  ctx.clearRect(0,0,w,h);
+  const scale=Math.min(w*.21,h*.39),cx=w*.33,cy=h*.51;
+  const points=[];
+  for(let i=0;i<350;i++){
+    const t=i/350*Math.PI*2;
+    for(let j=0;j<5;j++){
+      const a=j/5*Math.PI*2;
+      const radius=1+.38*Math.cos(3*t);
+      let x=(radius+.048*Math.cos(a))*Math.cos(2*t),y=(radius+.048*Math.cos(a))*Math.sin(2*t),z=.45*Math.sin(3*t)+.048*Math.sin(a);
+      const p=project3d(x,y,z,phase*.22+(pointer.x-.5)*.25,.7+Math.sin(phase*.15)*.2);
+      points.push(p);
+    }
+  }
+  points.sort((a,b)=>a[2]-b[2]);
+  ctx.fillStyle=palette().accent;
+  for(const [x,y,z] of points){ctx.globalAlpha=.18+(z+1.3)/3.5;const size=.65+(z+1.4)*.24;ctx.fillRect(cx+x*scale,cy+y*scale,size,size);}
+  ctx.globalAlpha=.2;ctx.strokeStyle=palette().muted;ctx.lineWidth=.6;ctx.beginPath();ctx.moveTo(16,h-36);ctx.lineTo(w-16,h-36);ctx.stroke();ctx.globalAlpha=1;
+}
+function draw(){drawTree();drawSculpture();}
+function animate(now){
+  if(!effectiveMotion() || document.hidden) return;
+  if(!lastFrame || now-lastFrame>=32){const step=lastFrame?Math.min((now-lastFrame)/1000,.08):0;phase+=step;if(tree)treePhase+=step*.24;draw();lastFrame=now;}
+  raf=requestAnimationFrame(animate);
+}
 
-try {
-  const response = await fetch('/projects.json');
-  if (!response.ok) throw new Error('Catalog unavailable');
-  projects = await response.json();
-  if (!Array.isArray(projects) || projects.some(p => !p.name || !p.description || !p.category || new URL(p.url).protocol !== 'https:')) throw new Error('Invalid catalog');
-  document.querySelector('[data-category="All"] span').textContent = projects.length;
-  document.querySelector('.section-index').textContent = `/ 01—${String(projects.length).padStart(2, '0')}`;
-  render();
-} catch {
-  status.textContent = 'Collection unavailable';
-  document.querySelector('#load-error').hidden = false;
-} finally {
-  grid.setAttribute('aria-busy', 'false');
+$('wheel').addEventListener('click',e=>{
+  if(performance.now()<suppressDialClickUntil){e.preventDefault();return;}
+  const b=e.target.closest('[data-view]');if(b)select(b.dataset.view);
+});
+$('content').addEventListener('click',e=>{
+  const b=e.target.closest('[data-view],[data-category],[data-next]');if(!b)return;
+  if(b.hasAttribute('data-category')){category=b.dataset.category;const scroll=$('content').scrollTop;select('projects',false);$('content').scrollTop=scroll;$('content').querySelector(`[data-category="${category}"]`).focus({preventScroll:true});}
+  else if(b.hasAttribute('data-next'))move(1);else select(b.dataset.view);
+});
+$('previous').addEventListener('click',()=>move(-1));$('next').addEventListener('click',()=>move(1));
+$('search-toggle').addEventListener('click',openSearch);
+$('search-close').addEventListener('click',closeSearch);
+$('search-dialog').addEventListener('cancel',e=>{e.preventDefault();closeSearch();});
+$('search-dialog').addEventListener('click',e=>{
+  const bounds=$('search-dialog').getBoundingClientRect();
+  if(e.target===$('search-dialog')&&(e.clientX<bounds.left||e.clientX>bounds.right||e.clientY<bounds.top||e.clientY>bounds.bottom))closeSearch();
+});
+$('search-dialog').addEventListener('keydown',e=>{
+  if(!['ArrowDown','ArrowUp'].includes(e.key)||!e.target.closest('#command-results'))return;
+  e.preventDefault();
+  const buttons=[...$('command-results').querySelectorAll('button')],index=buttons.indexOf(document.activeElement);
+  if(e.key==='ArrowUp'&&index===0)$('command-input').focus();
+  else buttons[Math.max(0,Math.min(buttons.length-1,index+(e.key==='ArrowDown'?1:-1)))]?.focus();
+});
+$('command-form').addEventListener('submit',e=>{e.preventDefault();command($('command-input').value);});
+$('command-input').addEventListener('input',searchResults);
+$('command-results').addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(b){select(b.dataset.view);$('command-input').value='';feedback('found something interesting.');}});
+$('command-input').addEventListener('keydown',e=>{if(e.key==='ArrowDown'&&!$('command-results').hidden){e.preventDefault();$('command-results').querySelector('button')?.focus();}});
+document.querySelectorAll('[data-command]').forEach(b=>b.addEventListener('click',()=>command(b.dataset.command)));
+$('theme-select').addEventListener('change',e=>setTheme(e.target.value));
+$('motion-button').addEventListener('click',()=>{motion=!motion;preferences.set('motion',motion);syncMotion();});
+$('tree-button').addEventListener('click',()=>{tree=!tree;preferences.set('tree',tree);syncMotion();});
+$('wheel-scene').addEventListener('wheel',e=>{
+  if(mobile.matches||e.ctrlKey||e.metaKey||drag?.moved||!views.length)return;
+  const pixels=wheelPixels(e,$('wheel-scene').clientHeight);
+  if(!pixels)return;
+  e.preventDefault();
+  if(!effectiveMotion()) {
+    reducedWheelDelta+=pixels;
+    const steps=Math.trunc(reducedWheelDelta/100);
+    if(steps){reducedWheelDelta-=steps*100;move(steps);}
+    return;
+  }
+  dialCommitPending=true;
+  dial.scroll(pixels/150,performance.now());
+  startDial();
+},{passive:false});
+$('wheel-scene').addEventListener('pointerdown',e=>{
+  if(mobile.matches||!e.isPrimary||e.button!==0||!views.length)return;
+  drag={id:e.pointerId,startX:e.clientX,startY:e.clientY,lastY:e.clientY,moved:false};
+});
+$('wheel-scene').addEventListener('pointermove',e=>{
+  if(!drag||drag.id!==e.pointerId)return;
+  const now=performance.now();
+  if(!drag.moved){
+    if(Math.hypot(e.clientX-drag.startX,e.clientY-drag.startY)<5)return;
+    drag.moved=true;dialCommitPending=true;
+    cancelAnimationFrame(dialFrame);dialFrame=0;
+    dial.beginDrag(now);
+    $('wheel-scene').setPointerCapture(e.pointerId);
+    $('wheel-scene').classList.add('is-dragging');
+  }
+  dial.drag((drag.lastY-e.clientY)/107,now);
+  drag.lastY=e.clientY;updateWheel();
+});
+function endDialDrag(e){
+  if(!drag||drag.id!==e.pointerId)return;
+  const moved=drag.moved;drag=null;
+  $('wheel-scene').classList.remove('is-dragging');
+  if($('wheel-scene').hasPointerCapture(e.pointerId))$('wheel-scene').releasePointerCapture(e.pointerId);
+  if(moved){
+    suppressDialClickUntil=performance.now()+250;
+    dial.release(performance.now(),e.type!=='pointerup');startDial();
+  }
+}
+for(const type of ['pointerup','pointercancel','lostpointercapture'])$('wheel-scene').addEventListener(type,endDialDrag);
+$('wheel-scene').addEventListener('pointerleave',()=>{if(drag&&!drag.moved)drag=null;});
+let mobileSettle;
+$('wheel-scene').addEventListener('scroll',()=>{
+  if(!mobile.matches||!views.length)return;clearTimeout(mobileSettle);
+  mobileSettle=setTimeout(()=>{
+    const scene=$('wheel-scene'), center=scene.scrollLeft+scene.clientWidth/2;
+    const items=[...$('wheel').children];const nearest=items.reduce((a,b)=>Math.abs(b.offsetLeft+b.offsetWidth/2-center)<Math.abs(a.offsetLeft+a.offsetWidth/2-center)?b:a);
+    const id=nearest?.querySelector('button').dataset.view;
+    if(mobileTarget){if(id===mobileTarget)mobileTarget=null;return;}
+    if(id&&id!==active)select(id);
+  },180);
+},{passive:true});
+document.addEventListener('keydown',e=>{
+  const typing=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)||document.activeElement.isContentEditable;
+  if(e.key==='Escape'&&$('search-dialog').open){e.preventDefault();closeSearch();return;}
+  if(e.key==='Escape')return;
+  if(e.metaKey||e.ctrlKey||e.altKey||typing||!views.length)return;
+  if(e.key==='/'){e.preventDefault();openSearch();}
+  else if(['ArrowDown','ArrowUp'].includes(e.key)&&!document.activeElement.closest('#command-results')){e.preventDefault();move(e.key==='ArrowDown'?1:-1,true);}
+  else if(e.key==='Enter'&&document.activeElement.classList.contains('wheel-card')){e.preventDefault();$('content').focus({preventScroll:true});if(mobile.matches)$('content').scrollIntoView({block:'start',behavior:effectiveMotion()?'smooth':'instant'});}
+});
+document.addEventListener('pointermove',e=>{
+  if(!effectiveMotion())return;pointer={x:e.clientX/innerWidth,y:e.clientY/innerHeight};
+  $('eye-pupil').setAttribute('transform',`translate(${(pointer.x-.5)*13} ${(pointer.y-.5)*9})`);
+  $('pointer-coordinates').textContent=`x ${pointer.x.toFixed(2)} / y ${pointer.y.toFixed(2)}`;
+},{passive:true});
+document.querySelector('.skip-link').addEventListener('click',e=>{e.preventDefault();$('content').focus();});
+window.addEventListener('hashchange',()=>{if(views.length)select(readHash(),false);});
+window.addEventListener('popstate',()=>{if(views.length)select(readHash(),false);});
+function readHash(){try{return decodeURIComponent(location.hash.slice(1))||'about';}catch{return 'about';}}
+window.addEventListener('resize',()=>{resizeCanvases();draw();});
+mobile.addEventListener('change',()=>{
+  drag=null;$('wheel-scene').classList.remove('is-dragging');
+  if(views.length)syncDial(Math.max(0,views.findIndex(v=>v.id===active)));
+  updateWheel();centerMobile();resizeCanvases();draw();
+});
+reduced.addEventListener('change',syncMotion);document.addEventListener('visibilitychange',syncMotion);
+
+motion=preferences.get('motion','true')==='true';tree=preferences.get('tree','true')==='true';
+setTheme(preferences.get('theme','carbon'));syncMotion();
+try{
+  const response=await fetch('/projects.json',{cache:'no-cache'});
+  if(!response.ok)throw new Error('Catalog unavailable');
+  projects=await response.json();
+  if(!Array.isArray(projects)||!projects.length||projects.some(p=>!p.name||!p.id||!p.category||!p.description||new URL(p.url).protocol!=='https:'))throw new Error('Invalid catalog');
+  views=[{id:'about',name:'About Amith',short:'whoami / Amith Athreya',symbol:'w.'},...projects,{id:'projects',name:'All projects',short:'projects / the collection',symbol:'ls -a'}];
+  document.querySelectorAll('.project-count').forEach(e=>e.textContent=String(projects.length).padStart(2,'0'));
+  buildWheel();select(readHash(),false);
+}catch{
+  $('content').innerHTML='<div class="error-state"><h1>The notebook couldn’t open.</h1><p>Please refresh to load the collection.</p><button id="retry-load">Try again ↻</button></div>';
+  $('retry-load').addEventListener('click',()=>location.reload());
+  feedback('Collection unavailable. Please refresh.');
 }

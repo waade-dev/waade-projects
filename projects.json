@@ -10,8 +10,8 @@
     "number": "01"
   },
   {
-    "id": "ferroprint",
-    "name": "Ferroprint",
+    "id": "polylume",
+    "name": "POLYLUME",
     "category": "Tools",
     "description": "A blueprint-style sketchpad for system diagrams, flows, wireframes, and floor plans. A little room to think things through.",
     "url": "https://www.rechargecompare.in/",
@@ -50,16 +50,6 @@
     "number": "05"
   },
   {
-    "id": "amith",
-    "name": "Amith Athreya",
-    "category": "Personal",
-    "description": "The person behind the projects. Software engineering, selected work, and experiments in backend systems and AI.",
-    "url": "https://athreyaamith.rechargecompare.in/",
-    "label": "A little more about me",
-    "art": "profile",
-    "number": "06"
-  },
-  {
     "id": "skill-studio",
     "name": "Skill Studio",
     "category": "Tools",
@@ -67,7 +57,7 @@
     "url": "https://waade-skill-studio.vercel.app/",
     "label": "A home for developer playbooks",
     "art": "skills",
-    "number": "07"
+    "number": "06"
   },
   {
     "id": "pi-durable",
@@ -77,6 +67,16 @@
     "url": "https://waade-projects.vercel.app/pi-durable/",
     "label": "Pull the plug. Keep the work.",
     "art": "durable",
+    "number": "07"
+  },
+  {
+    "id": "shared-hardware-lab",
+    "name": "Shared Hardware Lab",
+    "category": "Learning",
+    "description": "An interactive guide to how programs signal through shared hardware. Explore timing, caches, and memory contention, with a simulator and a local Python experiment.",
+    "url": "https://shared-hardware-lab.vercel.app/",
+    "label": "Separate programs. Shared machinery.",
+    "art": "blueprint",
     "number": "08"
   }
 ]
