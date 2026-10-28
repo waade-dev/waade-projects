@@ -50,9 +50,27 @@
   .wheel-scene.is-dragging,.wheel-scene.is-dragging .wheel-card{cursor:grabbing}
 }
 @media(max-width:720px){.wheel li{transition:transform .2s ease,opacity .2s ease}}
-/* A compact Tanya figurine beside the notebook identity. */
-.identity{flex-shrink:0}
-.identity-figurine{display:block;width:64px;height:96px;object-fit:contain;flex-shrink:0;user-select:none;filter:drop-shadow(0 3px 4px #0004)}
-@media(max-width:720px){.identity-figurine{width:48px;height:72px}.header{gap:12px}nav{gap:14px}}
-@media(max-width:370px){.identity-figurine{width:40px;height:60px}nav{gap:12px}}
-@media(max-width:480px){.header{flex-wrap:wrap;row-gap:8px}.header nav{flex:1 0 100%;justify-content:space-between;gap:12px}}
+/* Tanya's small display stand in the Observer column. */
+.observer-figure{position:relative;isolation:isolate;display:grid;place-items:center;width:100%;height:250px;margin:6px 0 0;padding:0 0 28px;perspective:700px;color:var(--accent);border-radius:3px}
+.observer-figure img{position:relative;z-index:2;display:block;width:148px;max-width:110%;height:222px;object-fit:contain;pointer-events:none;filter:drop-shadow(0 7px 5px #0005);transform-origin:50% 85%;transition:transform .25s ease,filter .25s ease}
+:root[data-motion=on] .observer-figure img{transform:rotateY(var(--figure-turn,0deg)) rotateZ(var(--figure-lean,0deg))}
+.figure-halo{position:absolute;inset:20px -8px 25px;z-index:-1;background:radial-gradient(ellipse at 50% 45%,#d3e99b19,transparent 68%);transition:opacity .3s ease}
+.figure-orbit{position:absolute;top:36px;left:50%;width:122px;height:122px;border:1px solid var(--line);border-radius:50%;transform:translateX(-50%);opacity:.7}
+.figure-orbit:before,.figure-orbit:after{content:'';position:absolute;width:5px;height:5px;background:var(--warm);border-radius:50%;left:14px;top:14px;box-shadow:0 0 10px #ce98704d}
+.figure-orbit:after{left:auto;top:auto;right:14px;bottom:14px;width:3px;height:3px;background:var(--accent)}
+.figure-plinth{position:absolute;bottom:26px;left:50%;width:92px;height:18px;transform:translateX(-50%);border:1px solid var(--line);border-radius:50%;background:radial-gradient(ellipse,#d3e99b12,transparent 75%);box-shadow:0 7px 0 -4px var(--bg),0 8px 0 -4px var(--line)}
+.figure-hint{position:absolute;bottom:0;font-size:7px;letter-spacing:.5px;color:var(--dim);transition:color .2s}
+.observer-figure:hover .figure-hint,.observer-figure:focus-visible .figure-hint{color:var(--accent)}
+.observer-figure:hover img,.observer-figure:focus-visible img{filter:drop-shadow(0 5px 10px #d3e99b30)}
+.observer-caption strong{font-size:7px;font-weight:400;letter-spacing:.7px;color:var(--ink)}
+.observer-caption{margin-top:15px}
+.figure-sparks{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:visible}
+.figure-sparks i{position:absolute;top:45%;left:50%;width:3px;height:9px;border-radius:2px;background:var(--warm);opacity:0;transform:rotate(var(--angle)) translateY(-35px)}
+.observer-figure.is-sparking .figure-sparks i{animation:figure-spark .7s ease-out both}
+.observer-figure.is-sparking .figure-halo{animation:figure-glow .7s ease-out}
+@keyframes figure-spark{0%{opacity:0;transform:rotate(var(--angle)) translateY(-35px) scale(.5)}20%{opacity:1}100%{opacity:0;transform:rotate(var(--angle)) translateY(-95px) scale(.2)}}
+@keyframes figure-glow{25%{opacity:1;filter:brightness(3)}100%{opacity:1;filter:brightness(1)}}
+@media(max-width:1150px){.observer{display:grid;grid-column:1/-1;grid-template-columns:128px minmax(0,1fr);column-gap:28px;border-top:1px solid var(--line);padding:20px 0 0;max-width:420px}.observer>.eyebrow{grid-column:1/-1;margin-bottom:6px}.observer-figure{height:218px}.observer-figure img{height:190px;width:128px;max-width:100%}.observer-details{padding-top:0}.observer-caption{margin-top:6px}.observer .aside-note{margin-bottom:0}}
+@media(max-width:720px){.observer{grid-template-columns:110px minmax(0,1fr);column-gap:20px;width:100%;max-width:none}.observer-figure{height:190px}.observer-figure img{height:165px;width:110px}.figure-orbit{width:96px;height:96px;top:25px}.observer .aside-note{display:none}}
+:root[data-motion=off] .observer-figure img{transform:none}
+@media(prefers-reduced-motion:reduce){.observer-figure img{transform:none!important}}

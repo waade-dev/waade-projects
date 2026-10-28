@@ -370,9 +370,25 @@ document.addEventListener('keydown',e=>{
 });
 document.addEventListener('pointermove',e=>{
   if(!effectiveMotion())return;pointer={x:e.clientX/innerWidth,y:e.clientY/innerHeight};
-  $('eye-pupil').setAttribute('transform',`translate(${(pointer.x-.5)*13} ${(pointer.y-.5)*9})`);
+  $('observer-figure').style.setProperty('--figure-turn',`${(pointer.x-.5)*16}deg`);
+  $('observer-figure').style.setProperty('--figure-lean',`${(pointer.x-.5)*-3}deg`);
   $('pointer-coordinates').textContent=`x ${pointer.x.toFixed(2)} / y ${pointer.y.toFixed(2)}`;
 },{passive:true});
+let observerSparkTimer;
+$('observer-figure').addEventListener('click',()=>{
+  const figure=$('observer-figure');
+  clearTimeout(observerSparkTimer);
+  figure.classList.remove('is-sparking');
+  $('observer-message').textContent='A little chaos. Stay curious.';
+  if(effectiveMotion()){
+    void figure.offsetWidth;
+    figure.classList.add('is-sparking');
+  }
+  observerSparkTimer=setTimeout(()=>{
+    figure.classList.remove('is-sparking');
+    $('observer-message').textContent='a curious point of view.';
+  },1800);
+});
 document.querySelector('.skip-link').addEventListener('click',e=>{e.preventDefault();$('content').focus();});
 window.addEventListener('hashchange',()=>{if(views.length)select(readHash(),false);});
 window.addEventListener('popstate',()=>{if(views.length)select(readHash(),false);});
