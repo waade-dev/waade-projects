@@ -27,6 +27,8 @@ Open http://localhost:4174. Serve over HTTP so the browser can fetch `projects.j
 
 ## Update the collection
 
+The header figurine is a transparent, optimized WebP at `assets/tanya-figurine.webp`. Its responsive sizes are defined by `.identity-figurine` in `style.css`; keep its empty alt text because it decorates the already-labeled home link.
+
 Edit `projects.json`. Each entry has `id`, `name`, `category`, `description`, `url`, `label`, `art`, and `number`. Use a unique URL-safe ID and an HTTPS destination. Available illustrations: `papers`, `blueprint`, `space`, `library`, `atlas`, `profile`, `skills`, and `durable`. The optional `access` field labels destinations requiring sign-in.
 
 The wheel, count, search, and project directory update from the catalog automatically. Keep the no-JavaScript fallback links in `index.html` in sync when changing the collection. No API key or private account data is required. The motion graphics are drawn locally; the observer does not send pointer data anywhere.

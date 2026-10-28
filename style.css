@@ -50,3 +50,8 @@
   .wheel-scene.is-dragging,.wheel-scene.is-dragging .wheel-card{cursor:grabbing}
 }
 @media(max-width:720px){.wheel li{transition:transform .2s ease,opacity .2s ease}}
+/* A compact Tanya figurine beside the notebook identity. */
+.identity{flex-shrink:0}
+.identity-figurine{display:block;width:64px;height:96px;object-fit:contain;flex-shrink:0;user-select:none;filter:drop-shadow(0 3px 4px #0004)}
+@media(max-width:720px){.identity-figurine{width:48px;height:72px}.header{gap:12px}nav{gap:14px}}
+@media(max-width:370px){.identity-figurine{width:40px;height:60px}nav{gap:12px}}
