@@ -78,5 +78,15 @@
     "label": "Separate programs. Shared machinery.",
     "art": "blueprint",
     "number": "08"
+  },
+  {
+    "id": "sazabi-field-guide",
+    "name": "Sazabi — Under the Hood",
+    "category": "Learning",
+    "description": "Follow production evidence through an AI observability system. Explore Sazabi’s workflow, incident simulations, system requirements, and a detailed plan for building your own version.",
+    "url": "https://sazabi-field-guide.vercel.app/",
+    "label": "Production clues. Clearer systems.",
+    "art": "atlas",
+    "number": "09"
   }
 ]
